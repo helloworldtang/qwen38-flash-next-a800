@@ -1,6 +1,6 @@
 # 01 · 路线选择：为什么必须是 Megatron（HF/QLoRA 死路实证）
 
-> 2026-11-22，compshare 4×A800-SXM4-80G，Qwen3.8-Flash-Next（125B MoE + 51B PLE 表）。
+> 2026-11-22，4×A800-SXM4-80GB（Ampere sm_80，NVLink），Qwen3.8-Flash-Next（125B MoE + 51B PLE 表）。
 > 结论先行：**官方 Best Practice 原文 "The training backend uses Megatron"**——这句话值得先信。
 > 我们不信邪用 HF 后端 + bnb QLoRA 试了 14 轮，以下是完整死亡证明，帮你省掉同样的半天。
 

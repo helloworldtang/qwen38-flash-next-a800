@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 4×A800 80G（华北二A，64C 940G）上的 QLoRA 环境准备
+# 4×A800-80G（sm_80，64C/940G）上的 QLoRA 环境准备
 # 与 00_env_8xh20.sh 的区别：走 HF 后端，不需要 Megatron/mcore-bridge；
 # 需要 bitsandbytes（NF4 量化）。fla / causal_conv1d 是该架构内核，sm_80 可编译。
 set -euo pipefail
