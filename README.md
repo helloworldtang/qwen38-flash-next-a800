@@ -1,42 +1,45 @@
-# qwen-flash-125b-toolkit
+# Qwen3.8-Flash-Next on A800
 
-Qwen3.8-Flash-Next 125B（MoE 125B + PLE 51B）在 **4×A800-80G** 级机器上的微调工具箱。
-2026-11-22 在 compshare 华北二A（4×A800-SXM4-80G, 64C/940G, CUDA 13.2）全程实证。
+**在 4×A800-80G 上微调 Qwen3.8-Flash-Next 125B 的一切**：路线实证、显存公式、环境七坑、编译轮子、训练脚本、成本账。
+2026-11-22 全程实战沉淀（compshare 华北二A · 4×A800-SXM4-80G · 64C/940G · CUDA 13.2 · torch 2.14.1+cu130 · py3.10）。
 
-## 为什么需要这个仓库
+## 一分钟版
 
-官方 Best Practice 的训练路径是 **8 卡 Megatron**（TP2/EP4/PP2）。在只有 4 卡 80G 时：
-预编译轮子（cu13 + torch 2.14 + py3.10 组合）上游全部缺失，且 swift 4.6.1 × megatron-core 0.16.1
-存在两处接口错配。本仓库把一天的环境攻坚沉淀为可直接使用的资产。
+```
+1. 别走 HF/QLoRA，官方唯一训练路径是 Megatron（51B PLE 表只有它搬得动）→ docs/01
+2. 4 卡配方 = TP4 / EP1 / ETP4 + PLE_CPU_OFFLOAD=1（专家 241.6G 必须切 4 刀）→ docs/03
+3. 环境有七个坑，按 docs/02 的顺序做，别乱序
+4. 轮子直接下载 Release（flash_attn / transformer_engine，cu13+torch2.14+py310 组合上游全缺）
+5. 训练成功的判据是 checkpoint 非空，不是进度条走完
+```
 
-## 内容
+## 内容导航
 
-| 项 | 说明 |
+| 路径 | 内容 |
 |---|---|
-| `skill/SKILL.md` | 完整方法论：4 卡配方、七坑速查、排障表（也可放入 Claude skills 目录直接用） |
-| `patches/flash-attn-cxx20.patch` | flash-attn 2.8.3.post2 在 torch≥2.14 下的 C++20 编译修复 |
-| `patches/ms-swift-mcore016-compat.py` | swift 4.6.1 × mcore 0.16.1 保存崩溃垫片（训练正常但 checkpoint 为空的那个坑） |
-| Release 资产 | 编译好的 wheel：`flash_attn` / `transformer_engine`（cu13+torch2.14.1+cu130+cp310+sm80） |
+| [docs/01](docs/01-为什么是Megatron-HF路线14轮实证.md) | HF 后端 14 轮排障的完整死亡证明——为什么死、怎么死的 |
+| [docs/02](docs/02-环境搭建七坑实录.md) | TE 编译/cublas 符号/版本错配/flash-attn cxx20/hostname/残留进程/杂项 |
+| [docs/03](docs/03-显存与并行公式.md) | 专家层 4 刀切分公式、官方 8 卡 → 4 卡参数映射、实测显存与步时 |
+| [docs/04](docs/04-训练配方与踩坑时间线.md) | 可抄配方、全天时间线、每小时的钱买了什么教训 |
+| [scripts/](scripts/) | 训练脚本模板、swift×mcore 兼容垫片 |
+| [skill/SKILL.md](skill/SKILL.md) | 同方法论打包成 Claude skill（速查表形态） |
+| [Releases](https://github.com/helloworldtang/qwen38-flash-next-a800/releases) | 编译轮子 |
 
-## 4 卡核心配方
+## Release 轮子
 
-```
-TP4 / EP1 / ETP4 + PLE_CPU_OFFLOAD=1 + bf16 LoRA
-实测: 63-73GiB/卡, GPU 利用率 92-97%, micro_batch=2 时 24-27s/step
-```
+| 轮子 | 组合 | 说明 |
+|---|---|---|
+| `flash_attn 2.8.3.post2+cu13torch2.14cxx20` | cu13 / torch2.14.1 / py310 / sm80 | 含 -std=c++20 修复（上游 Release 无此组合） |
+| `transformer_engine_torch 2.21.0` | cu13 / torch2.14.1 / py310 / sm80 | 官方 Release 无此组合（猜 URL 404 已核实） |
 
-专家层 241.6G(bf16) 必须切 4 刀——`expert_tensor_parallel_size` 必须等于 TP，
-这是 4 卡能否跑起来的全部秘密。详见 skill/SKILL.md。
+安装后务必 `pip install -U nvidia-cublas`（≥13.10），否则 TE 运行时缺符号。
 
-## 安装轮子
+## 关联
 
-```bash
-pip install flash_attn-2.8.3.post2+cu13torch2.14cxx20-cp310-cp310-linux_x86_64.whl
-pip install transformer_engine_torch-2.21.0+cu13torch2.14.1-cp310-cp310-linux_x86_64.whl
-pip install -U nvidia-cublas   # 必须 13.10+，否则 TE 运行时缺符号
-```
+- 上游修复 PR：[modelscope/ms-swift#10615](https://github.com/modelscope/ms-swift/pull/10615)（训练正常但 checkpoint 为空的保存崩溃）
+- 官方 Best Practice：[swift docs](https://swift.readthedocs.io/en/v4.5/BestPractices/Qwen3_8-Flash-Next-Best-Practice.html)（8 卡口径）
 
 ## 适用边界
 
-- 验证组合：CUDA 13.2 / torch 2.14.1+cu130 / Python 3.10 / sm_80(A800)；H20(sm_90) 需改 `TORCH_CUDA_ARCH_LIST="9.0"` 重编
-- 上游若发布官方 cu13 轮子或 swift 修复错配，本仓库资产即完成历史使命
+- 实证组合如上；H20（sm_90）需改 `TORCH_CUDA_ARCH_LIST="9.0"` 重编两个轮子
+- 上游发布 cu13 官方轮子或 swift 修复错配后，本仓相应内容自动过期
