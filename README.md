@@ -22,7 +22,7 @@
 | [docs/03](docs/03-显存与并行公式.md) | 专家层 4 刀切分公式、官方 8 卡 → 4 卡参数映射、实测显存与步时 |
 | [docs/04](docs/04-训练配方与踩坑时间线.md) | 可抄配方、全天时间线、每小时的钱买了什么教训 |
 | [scripts/](scripts/) | 训练脚本模板、swift×mcore 兼容垫片 |
-| [skill/SKILL.md](skill/SKILL.md) | 同方法论打包成 Claude skill（速查表形态） |
+| [skills 仓](https://github.com/helloworldtang/skills) | 同方法论打包成 Claude skill（真源在 skills 仓，`npx skills add helloworldtang/skills` 可装） |
 | [Releases](https://github.com/helloworldtang/qwen38-flash-next-a800/releases) | 编译轮子 |
 
 ## Release 轮子
