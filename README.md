@@ -30,7 +30,7 @@
 | 轮子 | 组合 | 说明 |
 |---|---|---|
 | `flash_attn 2.8.3.post2+cu13torch2.14cxx20` | cu13 / torch2.14.1 / py310 / sm80 | 含 -std=c++20 修复（上游 Release 无此组合） |
-| `transformer_engine_torch 2.21.0` | cu13 / torch2.14.1 / py310 / sm80 | 官方 Release 无此组合（猜 URL 404 已核实） |
+| `transformer_engine_torch` | （整理中） | 首次打包产物为 stub，需按 docs/02 的完整环境重打，暂勿使用 |
 
 安装后务必 `pip install -U nvidia-cublas`（≥13.10），否则 TE 运行时缺符号。
 
