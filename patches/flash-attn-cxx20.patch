@@ -1,0 +1,5 @@
+# flash-attn 2.8.3.post2 在 torch>=2.14 (CUDA 13) 下的编译修复
+# 症状: nvcc 报 namespace "std" has no member "strong_ordering"
+# 根因: torch 2.14 头文件要求 C++20, flash-attn setup.py 硬编码 -std=c++17
+# 修法: sed -i 's/c++17/c++20/g' setup.py  (4 处)
+# 验证: 2026-11-22 于 A800(sm_80)/CUDA13.2/torch2.14.1+cu130/py3.10 编译安装成功, 125B Megatron 训练实测通过
