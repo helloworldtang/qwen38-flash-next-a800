@@ -10,14 +10,16 @@
 - 主干专家层 120.8B 参数 = **241.6 GiB bf16**——显存切分是第一道生死关；
 - PLE 表 95.4 GiB，**"只能沿 TP 切分"**（官方原话）——搬运它只有 Megatron（训练）和 vLLM（推理）两套官方实现。
 
-官方 Best Practice 只给了 **8 卡**（TP2/EP4/PP2）配方。我们要在 **4 卡**上跑，且平台当前 8 卡机型缺货。于是有了这一天。
+官方 Best Practice 只给了 **8 卡**（TP2/EP4/PP2）配方。我们要在 **4 卡**上跑，。于是有了这一天。
 
 ## 二、基础设施
 
 | 项 | 值 |
 |---|---|
-| 机器 | compshare 华北二A 容器 · 4×A800-SXM4-80G（NVLink）· 64C/940G 内存/1TB 盘 · ¥27.78/h |
-| 镜像 | cuda132_torch2130_py312（实际 Python 3.10） |
+| GPU | 4 × NVIDIA A800-SXM4-80GB（Ampere, **sm_80**）· NVLink 互联 · 驱动 595.71.05 |
+| CPU / 内存 / 盘 | Intel Xeon Platinum 8358P @ 2.60GHz（x86_64，64 核）· 940G 内存 · 1TB 盘 |
+| OS / 内核 | Ubuntu 22.04.5 LTS · 5.15.0-113-generic · gcc 11.4.0（容器环境）|
+| CUDA / Python | CUDA 13.2（/usr/local/cuda，含 nvcc）· Python 3.10 |
 | 软件栈（最终跑通组合） | torch 2.14.1+cu130 · ms-swift 4.6.1 · megatron-core 0.16.1 · mcore-bridge 1.6.5 · transformer_engine 2.21.0（源码编译）· flash-attn 2.8.3.post2（打补丁编译）· flash-linear-attention + causal-conv1d |
 | 权重 | ModelScope 直连下载 360G（131 分片），32 线程 24–43MB/s |
 
