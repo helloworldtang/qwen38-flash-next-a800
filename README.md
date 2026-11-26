@@ -69,7 +69,7 @@ pip 版 nvidia-cublas 13.1 太旧 → `pip install -U nvidia-cublas`。**此坑�
 
 **问题 8（最阴险）：130/130 步跑完，checkpoint 是空目录**
 swift 的 `TorchDistSaveShardedStrategy()` 少传 `backend`/`version`（mcore 0.16.1 必传），保存瞬间 TypeError——但训练已"成功结束"，没人盯日志。
-解法：`.pth` 垫片（[脚本](scripts/ms_swift_mcore_compat.py)）+ 上游 PR：[modelscope/ms-swift#10615](https://github.com/modelscope/ms-swift/pull/10615)。**判据从此改写：训练成功的标准是 checkpoint 非空，不是进度条走完。**
+解法：`.pth` 垫片（[脚本](scripts/ms_swift_mcore_compat.py)）。曾提上游 PR [modelscope/ms-swift#10615](https://github.com/modelscope/ms-swift/pull/10615)，已关闭不合并——官方只维护 mcore 0.18+（该版本参数带默认值，无参调用合法），0.16.1 栈只能自带垫片。**判据从此改写：训练成功的标准是 checkpoint 非空，不是进度条走完。**
 
 **问题 9：`save_total_limit` 必须 ≥2；epochs 只收 int；小数 epochs 直接拒启；截短要用 `--train_iters`**
 
